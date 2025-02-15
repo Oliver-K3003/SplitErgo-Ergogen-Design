@@ -1,0 +1,173 @@
+points:
+  # key padding definition
+  key:
+    padding: U
+  # creating the key matrix
+  zones:
+    # main keys
+    main:
+      anchor:
+        shift: [150, -150]
+      rows:
+        row0:
+          row_net: row0
+        row1:
+          row_net: row1
+        row2:
+          row_net: row2
+        row3:
+          row_net: row3
+      columns:
+        col0:
+          key.column_net: col0
+          key.bind: [0, 0, 0, 3]
+        col1:
+          key.column_net: col1
+        col2:
+          key.column_net: col2
+          key.stagger: U*0.25
+        col3:
+          key.column_net: col3
+          key.stagger: U*0.25
+        col4:
+          key.column_net: col4
+          key.stagger: -U*0.25
+        col5:
+          key.column_net: col5
+          key.stagger: -U*0.25
+    # functional column on the end of the matrix
+    funcCol:
+      anchor:
+        ref: main_col5_row0
+        shift: U
+      rows:
+        row0:
+          row_net: row1
+          shift: [0, -0.5*U]
+        row1:
+          row_net: row2
+        row2:
+          row_net: row3
+      columns:
+        col0:
+          key.column_net: col6
+          key.bind: [2, U, 1/2U, 0]
+    # thumb cluster
+    thumb:
+      anchor:
+        ref: funcCol_col0_row0
+        shift: [U, -25]
+        rotate: -20
+      rows:
+        row0:
+          row_net: row0
+          shift: [-18, -10]
+        row1:
+          row_net: row1
+          width: 2U
+          shift: [6]
+          bind: [0, 1/2U, U, 0]
+      columns:
+        col0:
+          key.column_net: col6
+          rows:
+            row1.skip: true
+        col1:
+          key.column_net: col7
+# creating outlines for use in PCB cutout
+outlines:
+  # raw trace
+  raw:
+    - what: rectangle
+      where: true
+      bound: true
+      asym: left
+      size: [U, U]
+      corner: 1
+  # keycap trace
+  keycapOutlines:
+    - what: rectangle
+      where: true
+      bound: false
+      size: [u-1, u-1]
+  keycapOutlines2:
+    - what: rectangle
+      where: thumb_col1_row1
+      bound: false
+      size: [37.1, u-1]
+  # cutout trace
+  cutout:
+    - what: outline
+      name: raw
+      fillet: 2
+      expand: 3
+  preview:
+    - keycapOutlines
+    - keycapOutlines2
+# mapping to PCB
+pcbs:
+  # pcb name
+  splitErgo:
+    # defining the cutout layout
+    outlines:
+      main:
+        outline: cutout
+      keycaps:
+        outline: preview
+        layer: Eco1.User
+    # defining footprints for kicad
+    footprints:
+      # mx switches
+      mx_basic:
+        what: mx
+        where: true
+        params:
+          from: "{{column_net}}"
+          to: "{{colrow}}"
+          keycaps: true
+          reverse: true
+          hotswap: false
+      # diodes
+      diode:
+        what: diode
+        where: true
+        params:
+          from: "{{colrow}}"
+          to: "{{row_net}}"
+        adjust:
+          shift: [0, -5]
+      # microcontroller
+      promicro:
+        what: promicro
+        params:
+          orientation: reverse
+          P3: row3
+          P4: row2
+          P5: row1
+          P6: row0
+          P7: col0
+          P8: col1
+          P9: col2
+          P10: col3
+          P16: col4
+          P14: col5
+          P15: col6
+          P18: col7
+        where:
+          ref: funcCol_col0_row0
+          shift: [U+1.2, 1.85U]
+          rotate: -90
+      # serial comm
+      trrs:
+        what: trrs
+        where:
+          ref: funcCol_col0_row0
+          shift: [1.5U+3, 1/4U]
+          rotate: 270
+        params:
+          A: GND
+          B: GND
+          C: P2
+          D: VCC
+          reverse: true
+          symmetric: true
